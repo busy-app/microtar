@@ -51,7 +51,9 @@ static int parse_octal(const char* str, size_t len, unsigned* ret)
 {
     unsigned n = 0;
 
-    while(len-- > 0 && *str != 0) {
+    while(len > 0 && *str != 0) {
+        if(*str == ' ')
+            break;
         if(*str < '0' || *str > '9')
             return MTAR_EOVERFLOW;
 
@@ -60,12 +62,20 @@ static int parse_octal(const char* str, size_t len, unsigned* ret)
         else
             n *= 8;
 
-        char r = *str++ - '0';
+        char r = *str - '0';
+        ++str;
+        --len;
 
         if(n > UINT_MAX - r)
             return MTAR_EOVERFLOW;
         else
             n += r;
+    }
+    while(len > 0 && *str != 0) {
+        if(*str != ' ')
+            return MTAR_EOVERFLOW;
+        ++str;
+        --len;
     }
 
     *ret = n;
